@@ -160,7 +160,7 @@ class Cdescargas extends CI_Controller
             exec($cadena, $output, $return_var);
            
 
-            $borrar = "rm -rf /var/www/html/et/$file";
+            $borrar = "rm -rf /var/www/html/et/application/$file";
             $output2 = [];
             $return_var2 = 0;
             exec($borrar, $output2, $return_var2);
