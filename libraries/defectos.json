@@ -2836,7 +2836,7 @@
 			"codigotecmmas": "363",
 			"publico": 0,
 			"ensenanza": 0,
-			"visual": 0,
+			"visual": 1,
 			"nombre_grupo": "REVISION EXTERIOR",
 			"nombre_defecto": "motocarro"
 		},
