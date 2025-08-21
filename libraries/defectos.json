@@ -2832,7 +2832,7 @@
 		{
 			"codigo": "1.4.1.1.11",
 			"descripcion": "Mal estado de parachoques y/o defensas.",
-			"tipo": "B",
+			"tipo": "A",
 			"codigotecmmas": "363",
 			"publico": 0,
 			"ensenanza": 0,
@@ -2843,7 +2843,7 @@
 		{
 			"codigo": "1.4.1.1.12",
 			"descripcion": "Parachoques y defensa en mal estado.",
-			"tipo": "B",
+			"tipo": "A",
 			"codigotecmmas": "362",
 			"publico": 0,
 			"ensenanza": 0,
