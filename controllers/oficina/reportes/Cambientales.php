@@ -147,6 +147,7 @@ class Cambientales extends CI_Controller
                     $this->informecar($tipoinspeccion, $idconf_maquina, $fechainicial, $fechafinal, $prueba, $idconf_linea_inspeccion, $tipoinforme, $serieanalizador, $datoInforme, $csvdowload);
                     break;
                 case 'Corantioquia':
+                case 'Corpouraba':
                     $this->informecorantioquia($tipoinspeccion, $idconf_maquina, $fechainicial, $fechafinal, $datoInforme);
                     break;
                 case 'Bogota':
@@ -158,9 +159,9 @@ class Cambientales extends CI_Controller
                 case 'Cornare':
                     $this->informecornare($idconf_maquina, $fechainicial, $fechafinal, $prueba, $idconf_linea_inspeccion, $datoInforme);
                     break;
-                case 'Corpouraba':
-                    $this->informecorpouraba($idconf_maquina, $fechainicial, $fechafinal, $prueba, $idconf_linea_inspeccion, $datoInforme);
-                    break;
+                // case 'Corpouraba':
+                //     $this->informecorpouraba($idconf_maquina, $fechainicial, $fechafinal, $prueba, $idconf_linea_inspeccion, $datoInforme);
+                //     break;
                 case 'Sema':
                     $this->informesema($idconf_maquina, $fechainicial, $fechafinal, $prueba, $idconf_linea_inspeccion, $datoInforme);
                     break;
@@ -269,6 +270,11 @@ class Cambientales extends CI_Controller
 
     public function informecar($tipoinspeccion, $idconf_maquina, $fechainicial, $fechafinal, $prueba, $idconf_linea_inspeccion, $tipoinforme, $serieanalizador, $datoInforme, $csvdowload)
     {
+        date_default_timezone_set('America/bogota');
+        $date = date("d-m-Y");
+        $rta['cda'] = $this->infocda();
+        $numero_resolucion = $rta['cda']->numero_resolucion;
+        $serie = substr($serieanalizador, -4);
         // echo $idconf_linea_inspeccion . '<br>';
         //echo  $prueba;
         switch ($prueba) {
@@ -276,20 +282,26 @@ class Cambientales extends CI_Controller
                 if ($idconf_linea_inspeccion == 3 || $idconf_linea_inspeccion == 9 || $idconf_linea_inspeccion == 10) {
 
                     $query = $this->Mambientales->informe_car_motos($idconf_maquina, $fechainicial, $fechafinal, $datoInforme);
-                    $filename = 'M';
-                    $this->download_car_bogota($query, $filename, $idconf_maquina, $tipoinforme, $serieanalizador, $csvdowload);
+
+                    // $resolucion = str_pad($numero_resolucion, 5, "0", STR_PAD_LEFT);
+
+                    $fileNamee = $numero_resolucion . ' ' . $date . ' ' . $serie;
+                    $this->getInformacionAtalaya($query, $idconf_maquina, 1);
+                    // $this->download_car_bogota($query, $filename, $idconf_maquina, $tipoinforme, $serieanalizador, $csvdowload);
 
                     //$this->download_car_bogota($query, $filename, $idconf_maquina, $tipoinforme, $serieanalizador, $csvdowload);
                 } else {
                     $query = $this->Mambientales->informe_car_gasolina($idconf_maquina, $fechainicial, $fechafinal, $datoInforme);
-                    $filename = 'G';
-                    $this->download_car_bogota($query, $filename, $idconf_maquina, $tipoinforme, $serieanalizador, $csvdowload);
+                    $fileNamee = $numero_resolucion . ' ' . $date . ' ' . $serie;
+                    $this->getInformacionAtalaya($query, $idconf_maquina, 1);
+                    // $filename = 'G';
+                    // $this->download_car_bogota($query, $filename, $idconf_maquina, $tipoinforme, $serieanalizador, $csvdowload);
                 }
                 break;
             case 'opacidad':
                 $query = $this->Mambientales->informe_car_disel($idconf_maquina, $fechainicial, $fechafinal, $datoInforme);
-                $filename = 'D';
-                $this->download_car_bogota($query, $filename, $idconf_maquina, $tipoinforme, $serieanalizador, $csvdowload);
+                $fileNamee = $numero_resolucion . ' ' . $date . ' ' . $serie;
+                $this->getInformacionAtalaya($query, $idconf_maquina, 1);
                 break;
             default:
                 break;
@@ -663,13 +675,15 @@ class Cambientales extends CI_Controller
             case 'analizador':
                 if ($idconf_linea_inspeccion == 3 || $idconf_linea_inspeccion == 9 || $idconf_linea_inspeccion == 10) {
                     $query = $this->Mambientales->informe_corpouraba_motos($idconf_maquina, $fechainicial, $fechafinal, $datoInforme);
+                    var_dump($query);
                     $filename = 'Informe Corpouraba Motos';
-                    $this->getInformacionAtalaya($query, $idconf_maquina, $dowonload);
+                    // $this->getInformacionAtalaya($query, $idconf_maquina, $dowonload);
                     //$this->downloadinforme($query, $filename, $idconf_maquina);
                 } else {
                     $query = $this->Mambientales->informe_corpouraba_gasolina($idconf_maquina, $fechainicial, $fechafinal, $datoInforme);
                     $filename = 'Informe Corpouraba Gasolina';
-                    $this->getInformacionAtalaya($query, $idconf_maquina, $dowonload);
+                    var_dump($query);
+                    // $this->getInformacionAtalaya($query, $idconf_maquina, $dowonload);
                     //$this->downloadinforme($query, $filename, $idconf_maquina);
                 }
                 break;
@@ -1237,10 +1251,10 @@ class Cambientales extends CI_Controller
         $numeroAnalizadorotto = 0;
         $numeroOpa = 0;
 
-        if (empty($query)) {
-            $this->session->set_userdata('mesajeError', 'No se econtraron registros, por favor verifique el rango de fechas o comuniquese con el area de soporte.');
-            redirect('oficina/reportes/Cambientales');
-        }
+        // if (empty($query)) {
+        //     $this->session->set_userdata('mesajeError', 'No se econtraron registros, por favor verifique el rango de fechas o comuniquese con el area de soporte.');
+        //     redirect('oficina/reportes/Cambientales');
+        // }
         foreach ($json as $mas) {
             if ($mas['prueba'] == 'opacidad' && $mas['activo'] == 1)
                 $numeroOpa++;
@@ -1263,38 +1277,65 @@ class Cambientales extends CI_Controller
 
         foreach ($query as $val) {
             foreach ($json as $v) {
+                if ($v['idconf_maquina'] == $val->idsonometro) {
+                    $val->Marca_sonometro = strtoupper($v['marca']);
+                    $val->Serie_sonometro = strtoupper($v['serie_maquina']);
+                }
                 if ($v['idconf_maquina'] == $idconf_maquina) {
                     if (isset($val->Serial_equipo_utilizado)) {
                         $val->Serial_equipo_utilizado = strtoupper($v['serie_maquina']);
-                    } else {
-                        $this->session->set_userdata('mesajeError', 'No se econtraron registros de la maquina, comuniquese con el area de soporte.');
-                        redirect('oficina/reportes/Cambientales');
-                        exit;
+                    }
+                    if (isset($val->Serie_Analizador)) {
+                        $val->Serie_Analizador = strtoupper($v['serie_maquina']);
+                    }
+                    if (isset($val->Marca_del_medidor)) {
+                        $val->Marca_del_medidor = strtoupper($v['marca']);
                     }
                     if (isset($val->Marca_analizador)) {
-                        $val->Marca_del_medidor = strtoupper($v['marca']);
+                        $val->Marca_analizador = strtoupper($v['marca']);
                     }
                 }
             }
             foreach ($maquinaData as $m) {
                 if ($m['idconf_maquina'] == $idconf_maquina) {
-                    if ($m['nombre'] == "pef")
-                        $val->Pef = $m['valor'];
-                    if ($m['nombre'] == "ltoe")
-                        $val->Ltoe = $m['valor'];
+                    if ($m['nombre'] == "pef") {
+                        if (isset($val->Pef)) {
+                            $val->Pef = $m['valor'];
+                        }
+                    }
+                    if ($m['nombre'] == "ltoe") {
+                        if (isset($val->Ltoe)) {
+                            $val->Ltoe = $m['valor'];
+                        }
+                    }
+                    if (isset($val->Razon_social))
+                        $val->Razon_social = $this->razonSocialCda;
+
                     if ($m['nombre'] == "marcasoft") {
-                        $val->Marca_software_operacion = $m['valor'];
+                        if (isset($val->Marca_software_operacion)) {
+                            $val->Marca_software_operacion = $m['valor'];
+                        }
                     }
                     if ($m['nombre'] == "nombreMarca") {
-                        //                        $val->Marca_del_medidor = $m['valor'];
-                        $val->Marca_analizador = $m['valor'];
+                        if (isset($val->Marca_analizador)) {
+                            $val->Marca_analizador = $m['valor'];
+                        }
                     }
 
-                    if ($m['nombre'] == "versionsoft")
-                        $val->Version_software_operacion = $m['valor'];
+                    if ($m['nombre'] == "versionsoft") {
+                        if (isset($val->Version_software_operacion)) {
+                            $val->Version_software_operacion = $m['valor'];
+                        }
+                    }
+
+
+
                     if (isset($val->Serial_banco))
                         if ($m['nombre'] == "noSerieBench")
                             $val->Serial_banco = $m['valor'];
+                    if (isset($val->Serie_Banco))
+                        if ($m['nombre'] == "noSerieBench")
+                            $val->Serie_Banco = $m['valor'];
                     if ($m['nombre'] == "noSerieBench")
                         if (isset($val->No_serie_electronico_del_analizador))
                             $val->No_serie_electronico_del_analizador = $m['valor'];
@@ -1305,10 +1346,18 @@ class Cambientales extends CI_Controller
                     //exit;
                 }
             }
-            $val->Numero_total_de_equipos_opacimetros = $numeroOpa;
-            $val->Numero_total_de_analizadores_Otto = $numeroAnalizadorotto;
-            $val->Numero_total_de_analizadores_mots_4T = $numeroAnalizador4t;
-            $val->Numero_total_de_analizadores_mots_2T = $numeroAnalizador2t;
+            if (isset($val->Numero_total_de_equipos_opacimetros)) {
+                $val->Numero_total_de_equipos_opacimetros = $numeroOpa;
+            }
+            if (isset($val->Numero_total_de_analizadores_Otto)) {
+                $val->Numero_total_de_analizadores_Otto = $numeroAnalizadorotto;
+            }
+            if (isset($val->Numero_total_de_analizadores_mots_4T)) {
+                $val->Numero_total_de_analizadores_mots_4T = $numeroAnalizador4t;
+            }
+            if (isset($val->Numero_total_de_analizadores_mots_2T)) {
+                $val->Numero_total_de_analizadores_mots_2T = $numeroAnalizador2t;
+            }
             $opatotal = 0;
             $val->Numero_expe = $this->numeroExpediente;
             // if ($val->Ciclo_preliminar_)
@@ -1541,6 +1590,10 @@ class Cambientales extends CI_Controller
                         $val->marca_rpm = $v['marca'];
                         $val->serial_rpm = $v['serie_maquina'];
                     }
+                    // if ($v['prueba'] == 'sonometria' && $v['activo'] == 1 && $v['idconf_maquina'] == $val->idsonometro) {
+                    //     $val->marca_sonometro = $v['marca'];
+                    //     $val->serie_sonometro = $v['serie_maquina'];
+                    // }
                     if ($v['prueba'] == 'termohigrometro' && $v['activo'] == 1 && $v['idconf_maquina'] == $val->idth) {
                         if (isset($val->marca_temp_a)) {
                             $val->marca_temp_a = $v['marca'];
@@ -1557,7 +1610,15 @@ class Cambientales extends CI_Controller
                     }
                 }
 
+                if(isset($val->idsonometro) && $v['prueba'] == 'sonometro' && $v['activo'] == 1 && $v['idconf_maquina'] == $val->idsonometro) {
+                    $informeConcaptadorThTemp = 1;
+                    $val->marca_sonometro = $v['marca'];
+                    $val->serie_sonometro = $v['serie_maquina'];
+                }
+
                 if ($v['idconf_maquina'] == $idconf_maquina) {
+                    if (isset($val->Razon_social))
+                        $val->Razon_social = $this->razonSocialCda;
 
                     if (isset($val->No_serie_analizador))
                         $val->No_serie_analizador = strtoupper($v['serie_maquina']);
@@ -1579,21 +1640,25 @@ class Cambientales extends CI_Controller
                         $val->numero_serie_banco = strtoupper($v['serie_banco']);
                     if (isset($val->numeroSerieBanco))
                         $val->numeroSerieBanco = strtoupper($v['serie_banco']);
+                    if (isset($val->Serie_del_medidor))
+                        $val->Serie_del_medidor = strtoupper($v['serie_banco']);
 
                     if (isset($val->marca_bg))
                         $val->marca_bg = strtoupper($v['marca']);
 
                     if (isset($val->No_serie_electronico_del_opaciemtro))
                         $val->No_serie_electronico_del_opaciemtro = strtoupper($v['serie_banco']);
+                    if (isset($val->Serie_electronico_medidor))
+                        $val->Serie_electronico_medidor = strtoupper($v['serie_banco']);
 
 
                     if (isset($val->inspector_realiza_prueba))
                         $val->inspector_realiza_prueba = preg_replace('/\s+/', ' ', trim($val->inspector_realiza_prueba));
 
-                    if(isset($val->causa_rechazo) && !empty($val->causa_rechazo)) {
+                    if (isset($val->causa_rechazo) && !empty($val->causa_rechazo)) {
                         // Decodificar el JSON de causa_rechazo
                         $val->causa_rechazo = json_decode($val->causa_rechazo, true);
-                    } 
+                    }
                     // $val->causa_rechazo = json_decode($val->causa_rechazo, true);
 
                     // Verificar si fue exitoso o asignar array vacío si falla
@@ -1625,6 +1690,8 @@ class Cambientales extends CI_Controller
                                     $val->Nombre_delsoftware_de_aplicacion = $m['valor'];
                                 if (isset($val->nombreSoftwareAplicacion))
                                     $val->nombreSoftwareAplicacion = $m['valor'];
+                                if (isset($val->Marca_software_operacion))
+                                    $val->Marca_software_operacion = $m['valor'];
                                 if (isset($val->nom_soft))
                                     $val->nom_soft = $m['valor'];
                                 if (isset($val->nombre_software))
@@ -1637,6 +1704,8 @@ class Cambientales extends CI_Controller
                                     $val->Version_software_operacion = $m['valor'];
                                 if (isset($val->versionSoftwareAplicacion))
                                     $val->versionSoftwareAplicacion = $m['valor'];
+                                if (isset($val->Version_software_operacion))
+                                    $val->Version_software_operacion = $m['valor'];
                             }
 
                             if ($m['nombre'] == "versionsoft") {
@@ -1650,6 +1719,8 @@ class Cambientales extends CI_Controller
                                     $val->ver_soft = $m['valor'];
                                 if (isset($val->version_software))
                                     $val->version_software = $m['valor'];
+                                if (isset($val->Version_software_operacion))
+                                    $val->Version_software_operacion = $m['valor'];
                             }
                             if ($m['nombre'] == "noSerieBench") {
                                 if (isset($val->No_serie_electronico_del_analizador))
@@ -1710,6 +1781,8 @@ class Cambientales extends CI_Controller
 
             if (isset($val->Numero_total_de_analizadores_mots_4T))
                 $val->Numero_total_de_analizadores_mots_4T = $numeroAnalizador4t;
+            if (isset($val->No_total_equipos_analizadores_motos_4T_2T))
+                $val->No_total_equipos_analizadores_motos_4T_2T = $numeroAnalizador4t + $numeroAnalizador2t;
             if (isset($val->Numero_total_de_analizadores_Otto))
                 $val->Numero_total_de_analizadores_Otto = $numeroAnalizadorotto;
             if (isset($val->total_equipos_analizadores_chispa))
@@ -1736,10 +1809,13 @@ class Cambientales extends CI_Controller
             if ($informeConcaptadorThTemp == 1) {
                 foreach ($query as $key => $row) {
                     unset($query[$key]->idcaptador);
+                    unset($query[$key]->idsonometro);
                     unset($query[$key]->idth);
                     unset($query[$key]->idensortemp);
                 }
             }
+
+
 
             $val = (array) $query[0];
             $head = array_keys($val);
@@ -2769,7 +2845,12 @@ class Cambientales extends CI_Controller
         $spreadsheet->getActiveSheet()->mergeCells('B19:H19')->setCellValue('B19', $datosGenerales[0]->Numero_total_analizadores_2t)->getStyle('B19:H19')->getAlignment()->setHorizontal('center');
         $activeWorksheet->setCellValue('A20', 'N° totoal analizadores 4T:');
         $spreadsheet->getActiveSheet()->mergeCells('B20:H20')->setCellValue('B20', $datosGenerales[0]->Numero_total_analizadores_4t)->getStyle('B20:H20')->getAlignment()->setHorizontal('center');
-        $activeWorksheet->setCellValue('A22', 'Corantioquia está comprometida con el tratamiento legal, lícito, confidencial y seguro de sus datos personales.<br> Por favor consulte nuestra Política de Tratamiento de datos personales en nuestra página web: www.corantioquia.gov.co');
+        $dominio = file_get_contents('system/dominio.dat', true);
+        if ($dominio == 'cdafrontino.tecmmas.com') {
+            $activeWorksheet->setCellValue('A22', '');
+        } else {
+            $activeWorksheet->setCellValue('A22', 'Corantioquia está comprometida con el tratamiento legal, lícito, confidencial y seguro de sus datos personales.<br> Por favor consulte nuestra Política de Tratamiento de datos personales en nuestra página web: www.corantioquia.gov.co');
+        }
         $activeWorksheet->setTitle('Datos generales');
 
 
@@ -3370,7 +3451,8 @@ class Cambientales extends CI_Controller
         $writer->save('php://output');
     }
 
-    public function getPendientes() {
+    public function getPendientes()
+    {
         echo json_encode($this->Mambientales->getPendientes());
     }
 }
