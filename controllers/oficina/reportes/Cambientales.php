@@ -1277,10 +1277,13 @@ class Cambientales extends CI_Controller
 
         foreach ($query as $val) {
             foreach ($json as $v) {
-                if ($v['idconf_maquina'] == $val->idsonometro) {
-                    $val->Marca_sonometro = strtoupper($v['marca']);
-                    $val->Serie_sonometro = strtoupper($v['serie_maquina']);
+                if (isset($val->idsonometro)) {
+                    if ($v['idconf_maquina'] == $val->idsonometro) {
+                        $val->Marca_sonometro = strtoupper($v['marca']);
+                        $val->Serie_sonometro = strtoupper($v['serie_maquina']);
+                    }
                 }
+
                 if ($v['idconf_maquina'] == $idconf_maquina) {
                     if (isset($val->Serial_equipo_utilizado)) {
                         $val->Serial_equipo_utilizado = strtoupper($v['serie_maquina']);
@@ -1610,7 +1613,7 @@ class Cambientales extends CI_Controller
                     }
                 }
 
-                if(isset($val->idsonometro) && $v['prueba'] == 'sonometro' && $v['activo'] == 1 && $v['idconf_maquina'] == $val->idsonometro) {
+                if (isset($val->idsonometro) && $v['prueba'] == 'sonometro' && $v['activo'] == 1 && $v['idconf_maquina'] == $val->idsonometro) {
                     $informeConcaptadorThTemp = 1;
                     $val->marca_sonometro = $v['marca'];
                     $val->serie_sonometro = $v['serie_maquina'];
